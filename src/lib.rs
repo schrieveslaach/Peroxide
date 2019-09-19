@@ -69,9 +69,6 @@
 #[cfg(feature = "oxidize")]
 extern crate blas;
 
-#[cfg(feature = "oxidize")]
-extern crate lapack;
-
 #[cfg(feature = "plot")]
 extern crate pyo3;
 
@@ -89,6 +86,8 @@ pub mod structure;
 pub mod macros;
 pub mod ml;
 pub mod numerical;
+#[cfg(feature = "oxidize")]
+pub(crate) mod openblas;
 pub mod operation;
 pub mod redox;
 pub mod special;

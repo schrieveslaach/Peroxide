@@ -25,10 +25,13 @@ lapack = { version = "0.16", optional = true }
 packed_simd = { version = "0.3", optional = true }
 serde = { version = "1.0", features = ["derive"], optional = true }
 
+[build-dependencies]
+bindgen = "0.51"
+
 [package.metadata.docs.rs]
 rustdoc-args = [ "--html-in-header", "katex-header.html" ]
 
 [features]
 default = []
-oxidize = ["blas", "lapack", "packed_simd"]
+oxidize = ["blas", "packed_simd"]
 plot = ["pyo3"]

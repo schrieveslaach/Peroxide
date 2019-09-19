@@ -429,13 +429,11 @@ extern crate csv;
 
 #[cfg(feature = "oxidize")]
 extern crate blas;
-#[cfg(feature = "oxidize")]
-extern crate lapack;
 
 #[cfg(feature = "oxidize")]
-use blas::{daxpy, dgemm, dgemv};
+use crate::openblas::{dgecon, dgeqrf, dgetrf, dgetri, dgetrs, dorgqr};
 #[cfg(feature = "oxidize")]
-use lapack::{dgecon, dgeqrf, dgetrf, dgetri, dgetrs, dorgqr};
+use blas::{daxpy, dgemm, dgemv};
 #[cfg(feature = "oxidize")]
 use std::f64::NAN;
 
@@ -446,8 +444,8 @@ use std::cmp::{max, min};
 use std::convert;
 pub use std::error::Error;
 use std::fmt;
-use std::ops::{Add, Index, IndexMut, Mul, Neg, Sub};
 use std::iter;
+use std::ops::{Add, Index, IndexMut, Mul, Neg, Sub};
 use std::slice::{Iter, IterMut};
 #[allow(unused_imports)]
 use structure::vector::*;
@@ -664,7 +662,7 @@ impl Matrix {
                     data[i] = ref_data[s];
                 }
                 data[l] = ref_data[l];
-                matrix(data.clone(),r,c,Col)
+                matrix(data.clone(), r, c, Col)
             }
             Col => {
                 for i in 0..l {
@@ -672,7 +670,7 @@ impl Matrix {
                     data[i] = ref_data[s];
                 }
                 data[l] = ref_data[l];
-                matrix(data.clone(),r,c,Row)
+                matrix(data.clone(), r, c, Row)
             }
         }
     }
@@ -1933,16 +1931,8 @@ impl Index<(usize, usize)> for Matrix {
         let j = pair.1;
         assert!(i < self.row && j < self.col, "Index out of range");
         match self.shape {
-            Row => {
-                unsafe {
-                    &*p.add(i * self.col + j)
-                }
-            }   
-            Col => {
-                unsafe {
-                    &*p.add(i + j * self.row)
-                }  
-            },
+            Row => unsafe { &*p.add(i * self.col + j) },
+            Col => unsafe { &*p.add(i + j * self.row) },
         }
     }
 }
@@ -1971,15 +1961,11 @@ impl IndexMut<(usize, usize)> for Matrix {
         match self.shape {
             Row => {
                 let idx = i * c + j;
-                unsafe {
-                    &mut *p.add(idx)
-                }
+                unsafe { &mut *p.add(idx) }
             }
             Col => {
                 let idx = i + j * r;
-                unsafe {
-                    &mut *p.add(idx)
-                }
+                unsafe { &mut *p.add(idx) }
             }
         }
     }
@@ -2129,7 +2115,7 @@ impl FP for Matrix {
     where
         F: Fn(Vec<f64>) -> Vec<f64>,
     {
-        for i in 0 .. self.col {
+        for i in 0..self.col {
             unsafe {
                 let mut p = self.col_mut(i);
                 let fv = f(self.col(i));
@@ -2144,11 +2130,11 @@ impl FP for Matrix {
     where
         F: Fn(Vec<f64>) -> Vec<f64>,
     {
-        for i in 0 .. self.col {
+        for i in 0..self.col {
             unsafe {
                 let mut p = self.row_mut(i);
                 let fv = f(self.row(i));
-                for j in 0 .. p.len() {
+                for j in 0..p.len() {
                     *p[j] = fv[j];
                 }
             }
